@@ -57,3 +57,23 @@ These embeddings are used later to train a softmax regressor to classify the per
 Prepare train data and test data from those `2622` embeddings and feed into a simple softmax regressor with `3` layers containing first layer with `100` units and `tanh` activation function , second layer with `10` units and `tanh` activation function and third layer with `6` units for each person with `softmax` activation.
 
 ### Predictions
+For an image(may contain multiple faces) extract each face,get embeddings,get prediction from classifier network,make bounding box around face and write person name.
+<table>
+  <tr>
+    <td><img src='https://github.com/santhalakshminarayana/face-recognition/blob/master/predictions/jinping_modi.jpg' 
+             width='500px' height='300px'/></td>
+    <td><img src='' /></td>
+  </tr>
+  <tr>
+    <td></td>
+    <td></td>
+  </tr>
+  <tr>
+    <td></td>
+    <td></td>
+  </tr>
+  <tr>
+    <td></td>
+    <td></td>
+  </tr>
+</table>
