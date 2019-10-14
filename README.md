@@ -66,15 +66,19 @@ For an image(may contain multiple faces) extract each face,get embeddings,get pr
              width='500px' height='300px'/></td>
   </tr>
   <tr>
-    <td></td>
-    <td></td>
+    <td><img src='https://github.com/santhalakshminarayana/face-recognition/blob/master/predictions/merkel_modi.jpg'
+             width='500px' height='300px' /></td>
+    <td><img src='https://github.com/santhalakshminarayana/face-recognition/blob/master/predictions/merkel_putin_trump.jpg'
+             width='500px' height='300px' /></td>
   </tr>
   <tr>
-    <td></td>
-    <td></td>
+    <td><img src='https://github.com/santhalakshminarayana/face-recognition/blob/master/predictions/modi_trump.jpg' 
+        width='500px' height='300px' /></td>
+    <td><img src='https://github.com/santhalakshminarayana/face-recognition/blob/master/predictions/trump_putiin_jinping.jpg' 
+         width='500px' height='300px' /></td>
   </tr>
   <tr>
-    <td></td>
-    <td></td>
+    <td><img src='https://github.com/santhalakshminarayana/face-recognition/blob/master/predictions/trump_putin.jpg'
+             width='500px' height='300px' /></td>
   </tr>
 </table>
