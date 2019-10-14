@@ -58,11 +58,12 @@ Prepare train data and test data from those `2622` embeddings and feed into a si
 
 ### Predictions
 For an image(may contain multiple faces) extract each face,get embeddings,get prediction from classifier network,make bounding box around face and write person name.
-<table>
+<table border='0'>
   <tr>
     <td><img src='https://github.com/santhalakshminarayana/face-recognition/blob/master/predictions/jinping_modi.jpg' 
              width='500px' height='300px'/></td>
-    <td><img src='' /></td>
+    <td><img src='https://github.com/santhalakshminarayana/face-recognition/blob/master/predictions/mekel_jinping.jpg'
+             width='500px' height='300px'/></td>
   </tr>
   <tr>
     <td></td>
