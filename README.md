@@ -81,4 +81,8 @@ For an image(may contain multiple faces) extract each face,get embeddings,get pr
     <td><img src='https://github.com/santhalakshminarayana/face-recognition/blob/master/predictions/trump_putin.jpg'
              width='500px' height='300px' /></td>
   </tr>
+  <tr>
+    <p> My image</p>
+    <img src='https://github.com/santhalakshminarayana/face-recognition/blob/master/predictions/lakshminarayana.jpg' width='350px' height='500px' />
+  </tr>
 </table>
