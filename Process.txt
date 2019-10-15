@@ -1,0 +1,246 @@
+Steps to execute program
+
+1. Get dataset/images of persons.
+
+2. To get better predictions we first detect faces in image and use only faces for recognition.
+   To do so we first detect faces in an image,for this we use 'mmod_human_face_detector' a cnn_face_detector
+   which identifies faces in image and returns position of each face in image.
+
+   'dlib' in python uses these weights and detect images,but dlib doesn't provide this detector as in-built.
+   We must download and provide to 'dlib' classe for extracting face.
+
+   Download mmod_human_face_detector from here 'http://dlib.net/files/mmod_human_face_detector.dat.bz2'
+
+   As it is .bz2 file,extract it and feed to 'dlib' class.
+
+   Ex: 
+   		$ wget http://dlib.net/files/mmod_human_face_detector.dat.bz2
+   		$ bzip2 -dk mmod_human_face_detector.dat.bz2
+
+3. Extract face from images,crop face and store as image in separate folder with image name as person name.
+
+	
+	Ex: We use images with only one face 
+	```
+		import cv2
+		import dlib
+
+		# Load cnn_face_detector with 'mmod_face_detector'
+		dnnFaceDetector=dlib.cnn_face_detection_model_v1("mmod_human_face_detector.dat")
+
+		# Load image 
+		img=cv2.imread('path_to_image')
+
+		# Convert to gray scale
+  		gray=cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+  		
+  		# Find faces in image
+  		rects=dnnFaceDetector(gray,1)
+  		left,top,right,bottom=0,0,0,0
+
+  		# For each face 'rect' provides face location in image as pixel loaction
+  		for (i,rect) in enumerate(rects):
+    		left=rect.rect.left() #x1
+    		top=rect.rect.top() #y1
+    		right=rect.rect.right() #x2
+    		bottom=rect.rect.bottom() #y2
+  			width=right-left
+  			height=bottom-top
+
+  			# Crop image 
+  			img_crop=img[top:top+height,left:left+width]
+
+  			#save crop image with person name as image name 
+  			cv2.imwrite(path_to_image_as_person_name,img_crop)
+	```
+
+	Above snippet shows how to extract face from image and save them for recognition.
+	Do the same for all images in train dataset and test dataset saving with person names as image names.
+	Store each person cropped image in a separate folder like 
+	Ex: All 'modi_*.jpg' images are saved in 'modi' folder.
+
+4. We create embeddings for each face/person which defines the person in numeric data. Pre-trained networks 
+   like DeepFace,OpenFace provides embeddings in simple lines of code. But we use VGG_Face_net which trained on millions of images to recognize faces. The original model takes an image in WildFace dataset on which VGG_face_net trained and classifies/recognize person in image. It ouputs 2622 embeddings for an image,we take this 2622 embeddings for each cropped_image for later classification of image.
+
+   VGG_face_net weights are not avialble for tensorflow or keras models in official site,but there are bloggers outside who converted those not keras/tensorflow suppported weights to .h5 files which can easily use to define a model in keras/tensorflow.
+
+   Donwnload .h5 file for VGG_Face_net for this like 
+   'https://drive.google.com/uc?id=1CPSeum3HpopfomUEK1gybeuIVoeJT_Eo'
+
+   As it stored in google drive,we can download to our local storage with python 'gdown' package.
+
+   Ex: $ gdown https://drive.google.com/uc?id=1CPSeum3HpopfomUEK1gybeuIVoeJT_Eo
+
+   We have .h5 vgg_face_net weights now and use it to build vgg_face_net model in keras/tensorflow.
+
+5. To loal weights for model  we must define model architecture.
+    
+    VGG_Face model in keras as
+
+    ```
+    	# Tensorflow version == 2.0.0
+    	import numpy as np
+		import tensorflow as tf
+		from tensorflow import keras
+		from tensorflow.keras.models import Sequential,Model
+		from tensorflow.keras.layers import ZeroPadding2D,Convolution2D,MaxPooling2D
+		from tensorflow.keras.layers import Dense,Dropout,Softmax,Flatten,Activation,BatchNormalization
+		from tensorflow.keras.preprocessing.image import load_img,img_to_array
+		from tensorflow.keras.applications.imagenet_utils import preprocess_input
+		import tensorflow.keras.backend as K
+
+    	# Define VGG_FACE_MODEL architecture
+		model = Sequential()
+		model.add(ZeroPadding2D((1,1),input_shape=(224,224, 3)))
+		model.add(Convolution2D(64, (3, 3), activation='relu'))
+		model.add(ZeroPadding2D((1,1)))
+		model.add(Convolution2D(64, (3, 3), activation='relu'))
+		model.add(MaxPooling2D((2,2), strides=(2,2)))
+		model.add(ZeroPadding2D((1,1)))	
+		model.add(Convolution2D(128, (3, 3), activation='relu'))
+		model.add(ZeroPadding2D((1,1)))
+		model.add(Convolution2D(128, (3, 3), activation='relu'))
+		model.add(MaxPooling2D((2,2), strides=(2,2)))
+		model.add(ZeroPadding2D((1,1)))
+		model.add(Convolution2D(256, (3, 3), activation='relu'))
+		model.add(ZeroPadding2D((1,1)))
+		model.add(Convolution2D(256, (3, 3), activation='relu'))
+		model.add(ZeroPadding2D((1,1)))
+		model.add(Convolution2D(256, (3, 3), activation='relu'))
+		model.add(MaxPooling2D((2,2), strides=(2,2)))
+		model.add(ZeroPadding2D((1,1)))
+		model.add(Convolution2D(512, (3, 3), activation='relu'))
+		model.add(ZeroPadding2D((1,1)))
+		model.add(Convolution2D(512, (3, 3), activation='relu'))
+		model.add(ZeroPadding2D((1,1)))
+		model.add(Convolution2D(512, (3, 3), activation='relu'))
+		model.add(MaxPooling2D((2,2), strides=(2,2)))
+		model.add(ZeroPadding2D((1,1)))
+		model.add(Convolution2D(512, (3, 3), activation='relu'))
+		model.add(ZeroPadding2D((1,1)))
+		model.add(Convolution2D(512, (3, 3), activation='relu'))
+		model.add(ZeroPadding2D((1,1)))
+		model.add(Convolution2D(512, (3, 3), activation='relu'))
+		model.add(MaxPooling2D((2,2), strides=(2,2)))
+		model.add(Convolution2D(4096, (7, 7), activation='relu'))
+		model.add(Dropout(0.5))
+		model.add(Convolution2D(4096, (1, 1), activation='relu'))
+		model.add(Dropout(0.5))
+		model.add(Convolution2D(2622, (1, 1)))
+		model.add(Flatten())
+		model.add(Activation('softmax'))
+
+		# Load VGG Face model weights
+		model.load_weights('vgg_face_weights.h5')
+    ```
+
+    Here in the output layer they used softmax layer for recognising image in WildFaces dataset. We do only
+    require embeddings which are output for last but one layer i.e,. Flatten() layer.
+    So our model requires upto last Flatten() layer.
+
+    ```
+    	# Remove Last Softmax layer and get model upto last flatten layer with outputs 2622 units
+		vgg_face=Model(inputs=model.layers[0].input,outputs=model.layers[-2].outpu
+    ```
+
+    In the above line we defined model upto Flatten() layer.
+
+    Now we can feed any image to get embeddings which will be used to train our own classifier/recognizer.
+
+6. Prepare train data and test data which contains embeddings as data for each face and label as person
+   name.
+
+   ```
+   		# Prepare Train Data
+		x_train=[]
+		y_train=[]
+		person_rep=dict()
+		person_folders=os.listdir(path+'/Images_crop/')
+		for i,person in enumerate(person_folders):
+  			person_rep[i]=person
+  			image_names=os.listdir('Images_crop/'+person+'/')
+  				for image_name in image_names:
+    				img=load_img(path+'/Images_crop/'+person+'/'+image_name,target_size=(224,224))
+    				img=img_to_array(img)
+    				img=np.expand_dims(img,axis=0)
+    				img=preprocess_input(img)
+    				img_encode=vgg_face(img)
+    				x_train.append(np.squeeze(K.eval(img_encode)).tolist())
+    				y_train.append(i)
+
+   		# Prepare Test Data
+		x_test=[]
+		y_test=[]
+		person_folders=os.listdir(path+'/Test_Images_crop/')
+  		for image_name in test_image_names:
+  			img=load_img(path+'/Test_Images_crop/'+person+'/'+image_name,target_size=(224,224))
+    		img=img_to_array(img)
+    		img=np.expand_dims(img,axis=0)
+    		img=preprocess_input(img)
+    		img_encode=vgg_face(img)
+    		x_test.append(np.squeeze(K.eval(img_encode)).tolist())
+    		y_test.append(i)
+
+   ```
+
+   Earlier we stored each cropped face image in corresponding person folder, walk through each folder and in each folder for each image, load image from keras in-built function load_img() which is PIL image with target_size=(224,224) since VGG_face_net expects image shape in (224,224) format. 
+
+   For each loaded image it is preprocessed into scale of [-1,1] and feed into vgg_face() model which outputs (1,2262) dimensional Tensor, it is converted into list and append to train and test data.
+
+   Also,for each person we label that person in numeric number like 
+   Ex:
+   		{
+   			0: 'modi',
+ 			1: 'trump',
+ 			2: 'angelamerkel',
+ 			3: 'jinping',
+			....
+ 			....
+ 		}
+
+   We got (x_train, y_train) and (x_test, y_test) as lists ,to use in keras models we first convert them to numpy arrays.
+
+   Ex:
+   		```
+   			x_train=np.array(x_train)
+			y_train=np.array(y_train)
+			x_test=np.array(x_test)
+			y_test=np.array(y_test)
+   		```
+
+7. We end up with train data and test data with face embeddings and labels as person encodings.
+   Now we train simple softmax classifier and save model to get predictions for unseen image face in dataset.
+
+   ```
+   		# Softmax regressor to classify images based on encoding 
+		classifier_model=Sequential()
+		
+		classifier_model.add(Dense(units=100,input_dim=x_train.shape[1],kernel_initializer='glorot_uniform'))
+		
+		classifier_model.add(BatchNormalization())
+		
+		classifier_model.add(Activation('tanh'))
+
+		classifier_model.add(Dropout(0.3))
+
+		classifier_model.add(Dense(units=10,kernel_initializer='glorot_uniform'))
+
+		classifier_model.add(BatchNormalization())
+
+		classifier_model.add(Activation('tanh'))
+
+		classifier_model.add(Dropout(0.2))
+
+		classifier_model.add(Dense(units=6,kernel_initializer='he_uniform'))
+
+		classifier_model.add(Activation('softmax'))
+
+		classifier_model.compile(
+		loss=tf.keras.losses.SparseCategoricalCrossentropy(),optimizer='nadam',metrics=['accuracy'])
+   ```
+
+   We trained softmax classifier to classify image, it takes face embeddings as input and outputs corresponding image number which is encode for person name.
+
+8. Now we can recognize any face in image if we get embeddings for face with help of vgg_face model and 
+   feed into to classifier then get person name. With opencv draw rectangle box around face and write person name for each face in image.
+    
